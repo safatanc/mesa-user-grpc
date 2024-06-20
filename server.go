@@ -8,8 +8,8 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/safatanc/mesa-user-grpc/model"
-	"github.com/safatanc/mesa-user-grpc/user"
-	user_service "github.com/safatanc/mesa-user-grpc/user/proto"
+	user_pb "github.com/safatanc/mesa-user-grpc/pb/user/proto"
+	"github.com/safatanc/mesa-user-grpc/service/user"
 	"google.golang.org/grpc"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -40,7 +40,7 @@ func main() {
 
 	// gRPC
 	server := grpc.NewServer()
-	user_service.RegisterUserServiceServer(server, &user.UserService{DB: db})
+	user_pb.RegisterUserServiceServer(server, &user.UserService{DB: db})
 
 	log.Printf("Server is running on %v", lis.Addr())
 	if err := server.Serve(lis); err != nil {
