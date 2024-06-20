@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 	"github.com/safatanc/mesa-user-grpc/model"
 	user_pb "github.com/safatanc/mesa-user-grpc/pb/user/proto"
@@ -38,9 +39,12 @@ func main() {
 
 	db.AutoMigrate(&model.User{})
 
+	// Validator
+	val := validator.New(validator.WithRequiredStructEnabled())
+
 	// gRPC
 	server := grpc.NewServer()
-	user_pb.RegisterUserServiceServer(server, &user.UserService{DB: db})
+	user_pb.RegisterUserServiceServer(server, &user.UserService{DB: db, Validate: val})
 
 	log.Printf("Server is running on %v", lis.Addr())
 	if err := server.Serve(lis); err != nil {
