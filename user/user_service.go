@@ -3,55 +3,71 @@ package user
 import (
 	"context"
 
-	pb "github.com/safatanc/mesa-user-grpc/user/proto"
+	"github.com/safatanc/mesa-user-grpc/helper"
+	"github.com/safatanc/mesa-user-grpc/model"
+	user_service "github.com/safatanc/mesa-user-grpc/user/proto"
+	"gorm.io/gorm"
 )
 
-type User struct {
-	pb.UnimplementedUserServiceServer
+type UserService struct {
+	user_service.UnimplementedUserServiceServer
+	DB *gorm.DB
 }
 
-func (u *User) CreateUser(ctx context.Context, createUserRequest *pb.CreateUserRequest) (*pb.UserResponse, error) {
-	data := &pb.User{
-		Username: createUserRequest.Username,
-		FullName: createUserRequest.FullName,
-		Email:    createUserRequest.Email,
-		Phone:    createUserRequest.Phone,
+func (u *UserService) CreateUser(ctx context.Context, createUserRequest *user_service.CreateUserRequest) (*user_service.Response, error) {
+	user := helper.CreateUserRequestToUser(createUserRequest)
+	result := u.DB.Create(&user)
+
+	if result.Error != nil {
+		return &user_service.Response{
+			Status: "error",
+			Error: &user_service.Error{
+				Message: result.Error.Error(),
+			},
+			Data: nil,
+		}, nil
 	}
-	return &pb.UserResponse{
+
+	return &user_service.Response{
 		Status: "success",
 		Error:  nil,
-		Data:   data,
+		Data:   helper.UserToUserResponse(user),
 	}, nil
 }
 
-func (u *User) FindAllUser(ctx context.Context, findAllUserRequest *pb.FindAllUserRequest) (*pb.UserResponses, error) {
-	data := &pb.User{
-		Username: "Agilistikmal",
-		FullName: "Agil Ghani Istikmal",
-		Email:    "agilistikmal3@gmail.com",
-		Phone:    "6281346173829",
+func (u *UserService) FindAllUser(ctx context.Context, findAllUserRequest *user_service.FindAllUserRequest) (*user_service.Responses, error) {
+	var users []*model.User
+	u.DB.Find(&users)
+
+	var userResponses []*user_service.UserResponse
+	for _, user := range users {
+		userResponses = append(userResponses, helper.UserToUserResponse(user))
 	}
 
-	return &pb.UserResponses{
+	return &user_service.Responses{
 		Status: "success",
 		Error:  nil,
-		Data: []*pb.User{
-			data,
-		},
+		Data:   userResponses,
 	}, nil
 }
 
-func (u *User) FindUser(ctx context.Context, findUserRequest *pb.FindUserRequest) (*pb.UserResponse, error) {
-	data := &pb.User{
-		Username: "Agilistikmal",
-		FullName: "Agil Ghani Istikmal",
-		Email:    "agilistikmal3@gmail.com",
-		Phone:    "6281346173829",
+func (u *UserService) FindUser(ctx context.Context, findUserRequest *user_service.FindUserRequest) (*user_service.Response, error) {
+	var user *model.User
+	result := u.DB.First(&user, "username = ?", findUserRequest.Username)
+
+	if result.Error != nil {
+		return &user_service.Response{
+			Status: "error",
+			Error: &user_service.Error{
+				Message: result.Error.Error(),
+			},
+			Data: nil,
+		}, nil
 	}
 
-	return &pb.UserResponse{
+	return &user_service.Response{
 		Status: "success",
 		Error:  nil,
-		Data:   data,
+		Data:   helper.UserToUserResponse(user),
 	}, nil
 }

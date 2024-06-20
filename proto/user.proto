@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package user;
-option go_package = "github.com/safatanc/mesu-user-grpc/user";
+package user_service;
+option go_package = "github.com/safatanc/mesu-user-grpc/user_service";
 
 service UserService {
-  rpc CreateUser(CreateUserRequest) returns (UserResponse) {}
-  rpc FindAllUser(FindAllUserRequest) returns (UserResponses) {}
-  rpc FindUser(FindUserRequest) returns (UserResponse) {}
+  rpc CreateUser(CreateUserRequest) returns (Response) {}
+  rpc FindAllUser(FindAllUserRequest) returns (Responses) {}
+  rpc FindUser(FindUserRequest) returns (Response) {}
 }
 
 message CreateUserRequest {
@@ -17,27 +17,30 @@ message CreateUserRequest {
   string password =5;
 }
 
-message User {
-  string username = 1;
-  string full_name = 2;
-  string email = 3;
-  string phone = 4;
-}
-
 message Error {
   string message = 1;
 }
 
 message UserResponse {
-  string status = 1;
-  Error error = 2;
-  User data = 3;
+  string id = 1;
+  string username = 2;
+  string full_name = 3;
+  string email = 4;
+  string phone = 5;
+  int64 created_at = 6;
+  int64 updated_at = 7;
 }
 
-message UserResponses {
+message Response {
   string status = 1;
   Error error = 2;
-  repeated User data = 3;
+  UserResponse data = 3;
+}
+
+message Responses {
+  string status = 1;
+  Error error = 2;
+  repeated UserResponse data = 3;
 }
 
 message FindAllUserRequest {}
