@@ -20,16 +20,6 @@ import (
 func main() {
 	godotenv.Load()
 
-	PORT := os.Getenv("PORT")
-	if PORT == "" {
-		PORT = "50051"
-	}
-
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", PORT))
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	// Database
 	dsn := os.Getenv("DSN")
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
@@ -44,7 +34,17 @@ func main() {
 	// Validator
 	val := validator.New(validator.WithRequiredStructEnabled())
 
-	// gRPC
+	// gRPC Server
+	PORT := os.Getenv("PORT")
+	if PORT == "" {
+		PORT = "50051"
+	}
+
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", PORT))
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	server := grpc.NewServer()
 	user_pb.RegisterUserServiceServer(server, &user.UserService{DB: db, Validate: val})
 
