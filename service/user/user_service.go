@@ -68,6 +68,21 @@ func (u *UserService) UpdateUser(ctx context.Context, updateUserRequest *user_pb
 	return helper.UserToUserResponse(user), nil
 }
 
+func (u *UserService) DeleteUser(ctx context.Context, deleteUserRequest *user_pb.DeleteUserRequest) (*user_pb.UserResponse, error) {
+	var user *model.User
+	result := u.DB.First(&user, "username = ?", deleteUserRequest.Username)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	result = u.DB.Delete(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return helper.UserToUserResponse(user), nil
+}
+
 func (u *UserService) FindAllUser(ctx context.Context, findAllUserRequest *user_pb.FindAllUserRequest) (*user_pb.UserResponses, error) {
 	var users []*model.User
 	u.DB.Find(&users)
