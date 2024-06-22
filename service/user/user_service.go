@@ -99,7 +99,14 @@ func (u *UserService) FindAllUser(ctx context.Context, findAllUserRequest *user_
 
 func (u *UserService) FindUser(ctx context.Context, findUserRequest *user_pb.FindUserRequest) (*user_pb.UserResponse, error) {
 	var user *model.User
-	result := u.DB.First(&user, "username = ?", findUserRequest.Username)
+	var result *gorm.DB
+
+	switch input := findUserRequest.Input.(type) {
+	case *user_pb.FindUserRequest_Id:
+		result = u.DB.First(&user, "id = ?", input.Id)
+	case *user_pb.FindUserRequest_Username:
+		result = u.DB.First(&user, "username = ?", input.Username)
+	}
 
 	if result.Error != nil {
 		return nil, result.Error

@@ -57,5 +57,8 @@ message UserResponses {
 message FindAllUserRequest {}
 
 message FindUserRequest {
-  string username = 1;
+  oneof input {
+    string id = 1;
+    string username = 2;
+  }
 }
